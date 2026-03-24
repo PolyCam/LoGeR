@@ -34,7 +34,6 @@ from plyfile import PlyData, PlyElement
 
 # LoGeR imports (run from repo root or ensure loger is on PYTHONPATH)
 from loger.models.pi3 import Pi3
-from loger.utils.geometry import depth_edge
 
 
 def parse_args():
@@ -151,7 +150,7 @@ def build_forward_kwargs(config, args):
     """Build forward pass kwargs from config and CLI args."""
     training = config.get("training_settings", {})
     model_cfg = config.get("model", {})
-    se3_from_config = model_cfg.get("se3", config.get("se3", False))
+    se3_from_config = model_cfg.get("se3", config.get("se3", False))  # LoGeR* uses SE(3)
     return {
         "window_size": args.window_size or training.get("window_size", -1),
         "overlap_size": args.overlap_size or training.get("overlap_size", 0),
@@ -159,7 +158,7 @@ def build_forward_kwargs(config, args):
         "num_iterations": config.get("num_iterations", 1),
         "sim3": False,
         "sim3_scale_mode": "median",
-        "se3": bool(se3_from_config) or True,  # LoGeR* uses SE(3)
+        "se3": bool(se3_from_config),
         "turn_off_ttt": False,
         "turn_off_swa": False,
     }
@@ -545,8 +544,8 @@ def main():
     shared = not args.per_frame_intrinsics
     scale_x = img_width / model_W
     scale_y = img_height / model_H
-    cx = args.cx if args.cx is not None else img_width / 2.0
-    cy = args.cy if args.cy is not None else img_height / 2.0
+    cx = args.cx if args.cx is not None else (img_width - 1) / 2.0
+    cy = args.cy if args.cy is not None else (img_height - 1) / 2.0
 
     if args.fx is not None:
         fx = args.fx
